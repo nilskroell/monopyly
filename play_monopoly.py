@@ -1,3 +1,4 @@
+from gamestate import GameState
 from playfields import StreetField, StartField
 from gamelogic import GameLogic
 from player import Player
@@ -43,14 +44,14 @@ for (color, buying_price, house_price, n) in zip(colors, buying_prices, house_pr
 
 print(len(my_fields))
 # Initialize gamelogic
-my_gamelogic = GameLogic(players=players, fields=my_fields, pass_go_income=PASS_GO_INCOME)
-
+my_gamestate = GameState(players=players, fields=my_fields, pass_go_income=PASS_GO_INCOME)
+my_gamelogic = GameLogic(gamestate=my_gamestate)
 
 # Shuffle player sequence
 random.shuffle(players)
 
 # Initialize player controllers
-player_controllers = [PlayerController(player=p, gamelogic=my_gamelogic) for p in players]
+player_controllers = [PlayerController(player=p, gamestate=my_gamestate, gamelogic=my_gamelogic) for p in players]
 
 # initialize strategies
 strategies = [Strategy(player=p, player_controller=pc) for (p, pc) in zip(players, player_controllers)]
@@ -59,6 +60,7 @@ strategies = [Strategy(player=p, player_controller=pc) for (p, pc) in zip(player
 
 for i in range(N_ROUNDS):
     for j, player in enumerate(players):
+        print(player)
         print(f"Balance player {player.id}: {player.balance} €")
 
         player_controller = player_controllers[j]

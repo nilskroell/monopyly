@@ -1,3 +1,4 @@
+from gamestate import GameState
 from player import Player
 from gamelogic import GameLogic
 from playfields import Property, StreetField
@@ -5,17 +6,18 @@ from playfields import Property, StreetField
 import logging
 
 class PlayerController():
-    def __init__(self, player: Player, gamelogic: GameLogic) -> None:
+    def __init__(self, player: Player, gamestate: GameState, gamelogic: GameLogic) -> None:
         self.player = player
+        self.gamestate = gamestate
         self.gamelogic = gamelogic
     
     def buy_property(self) -> None:
-        property = self.gamelogic.fields[self.player.position]
+        property = self.gamestate.fields[self.player.position]
 
-        if self.player is not self.gamelogic.active_player:
+        if self.player is not self.gamestate.active_player:
             logging.warn(f"Player {self.player.id} cannot buy property {property.position}: " +
                          f"Player {self.player.id} is not the active player. " +
-                         f"(Player {self.gamelogic.active_player.id} is.)")
+                         f"(Player {self.gamestate.active_player.id} is.)")
             return False
 
         if not isinstance(property, Property):
@@ -118,10 +120,10 @@ class PlayerController():
                          f"after transaction ({n_houses_after_transaction})")
             return False
 
-        n_total_houses_after_transaction = self.gamelogic.n_total_houses - n_houses_to_buy
+        n_total_houses_after_transaction = self.gamestate.n_total_houses - n_houses_to_buy
         if n_total_houses_after_transaction <= 0:
             logging.warn(f"Player {self.player.id} cannot buy {n_houses_to_buy} house/s on street {street.position}: " +
-                         f"Not enough houses in the bank (currently {self.gamelogic.n_total_houses}).")
+                         f"Not enough houses in the bank (currently {self.gamestate.n_total_houses}).")
             return False
 
         self.gamelogic.buy_n_houses_on_streetfield(self.player, street, n_houses_to_buy)

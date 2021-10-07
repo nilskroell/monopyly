@@ -1,3 +1,4 @@
+from gamestate import GameState
 from player import Player
 from playfields import NonProperty, Property, StreetField
 import utils
@@ -7,31 +8,15 @@ import numpy as np
 
 
 class GameLogic():
-    def __init__(self,
-                 players: list,
-                 fields: list,
-                 pass_go_income: int = 200,
-                 n_total_houses: int = 120,
-                 buyback_quota: float = 0.5,
-                 n_dice: int = 2,
-                 n_dicefaces: int = 6) -> None:
-        self.active_player = None
-        self.players = players
-        self.fields = fields
-        self.board_length = len(self.fields)
-
-        self.pass_go_income = pass_go_income
-        self.n_total_houses = n_total_houses # TODO: outsource to gamestate or bank?
-        self.buyback_quota = buyback_quota
-        self.n_dice = n_dice
-        self.n_dicefaces = n_dicefaces
+    def __init__(self, gamestate: GameState) -> None:
+        self.gamestate = gamestate
 
     def set_active_player(self, current_player: Player) -> None:
-        self.active_player = current_player
+        self.gamestate.active_player = current_player
 
     # Basic stuff
     def roll_dice(self) -> tuple:
-        dice = utils.throw_n_dice(n_dice=self.n_dice, n_dicefaces=self.n_dicefaces)
+        dice = utils.throw_n_dice(n_dice=self.gamestate.n_dice, n_dicefaces=self.gamestate.n_dicefaces)
         n_dots = np.sum(dice)
         pasch = np.min(dice) == np.max(dice)
 
@@ -41,7 +26,7 @@ class GameLogic():
 
 
     def process_player_position(self, player: Player) -> None:
-        field = self.fields[player.position]
+        field = self.gamestate.fields[player.position]
         if isinstance(field, Property):
             if field.mortgaged:
                 return
@@ -71,10 +56,12 @@ class GameLogic():
 
     @staticmethod
     def calc_rent(property: Property):
+        # TODO
         return 0.1 * property.buying_price
     
     # Player balance
-    def increase_player_balance(self, player: Player, amount: int) -> None:
+    @staticmethod
+    def increase_player_balance(player: Player, amount: int) -> None:
         assert amount >= 0
         player.balance +=  amount
 
@@ -83,7 +70,8 @@ class GameLogic():
         player.balance -= amount
         self.check_player_lifestatus(player)
 
-    def check_player_lifestatus(self, player: Player) -> None:
+    @staticmethod
+    def check_player_lifestatus(player: Player) -> None:
         if player.balance < 0:
             player.alive = False
 
@@ -96,14 +84,14 @@ class GameLogic():
 
     def pass_go(self, player: Player) -> None:
         logging.info(f"Player {player.id} has passed GO.")
-        self.increase_player_balance(player, self.pass_go_income)
+        self.increase_player_balance(player, self.gamestate.pass_go_income)
 
     # Player movement
     def move_player_forward(self, player: Player, n_steps: int) -> None:
         target_position = player.position + n_steps
 
-        while target_position >= self.board_length:
-            target_position = target_position - self.board_length
+        while target_position >= self.gamestate.board_length:
+            target_position = target_position - self.gamestate.board_length
             self.pass_go(player)
            
         logging.debug(f"Move Player {player.id} from position {player.position} to position {target_position}.")
@@ -112,22 +100,25 @@ class GameLogic():
     def move_player_backward(self, player: Player, n_steps: int) -> None:
         target_position = player.position - n_steps
         if target_position < 0:
-            target_position = target_position % self.board_length
+            target_position = target_position % self.gamestate.board_length
 
         logging.debug(f"Move Player {player.id} from position {player.position} to position {target_position}.")
-        player.position = (player.position - n_steps) % self.board_length
+        player.position = (player.position - n_steps) % self.gamestate.board_length
 
     def move_player_forward_to_position(self, player: Player, target_position: int) -> None:
         n_steps = target_position - player.position
         if n_steps < 0:
-            n_steps += self.board_length
+            n_steps += self.gamestate.board_length
         
         self.move_player_forward(player, n_steps)
 
 
     # Property
-    def change_property_owner(self, property: Property, new_owner: Player):
-        logging.info(f"Change ownership of property {property.position} from {('Player ' + property.owner.id) if property.owner else 'the bank'} to Player {new_owner.id}.")
+    @staticmethod
+    def change_property_owner(property: Property, new_owner: Player):
+        logging.info(f"Change ownership of property {property.position} from " +
+                     f"{('Player ' + property.owner.id) if property.owner else 'the bank'}" +
+                     " to Player {new_owner.id}.")
         property.owner = new_owner
 
     def buy_property_from_bank(self, player: Player, property: Property):
@@ -140,14 +131,14 @@ class GameLogic():
         logging.info(f"Player {player.id} buys {n_houses_to_buy} on street {street.position}.")
         self.decrease_player_balance(player, total_price_to_pay)
         street.n_houses += n_houses_to_buy
-        self.n_total_houses -= n_houses_to_buy
+        self.gamestate.n_total_houses -= n_houses_to_buy
         
     def sell_n_houses_on_streetfield(self, player: Player, street: StreetField, n_houses_to_sell: int):
-        total_amount_to_get_back = self.buyback_quota * n_houses_to_sell * street.house_price
+        total_amount_to_get_back = self.gamestate.buyback_quota * n_houses_to_sell * street.house_price
         logging.info(f"Player {player.id} sells {n_houses_to_sell} on street {street.position} back to bank.")
         self.increase_player_balance(player, total_amount_to_get_back)
         street.n_houses -= n_houses_to_sell
-        self.n_total_houses += n_houses_to_sell
+        self.gamestate.n_total_houses += n_houses_to_sell
 
     # Mortagage
     def mortgage_property(self, property: Property):
