@@ -1,6 +1,6 @@
 from numpy.lib.arraysetops import unique
 from gamestate import GameState
-from playfields import StreetField, StartField
+from playfields import Property, StreetField, StartField
 from gamelogic import GameLogic
 from player import Player
 from player_controller import PlayerController
@@ -17,9 +17,9 @@ logging.basicConfig(level=logging.DEBUG, format='%(message)s')
 
 
 # USER DEFINED GAME PARAMETERS
-N_PLAYERS = 10
-START_BALANCE = 500
-PASS_GO_INCOME = 0
+N_PLAYERS = 1
+START_BALANCE = 50000
+PASS_GO_INCOME = 200
 
 N_ROUNDS = 100
 
@@ -34,6 +34,8 @@ colors = np.arange(10)
 n_fields = np.tile([2, 3], 5)
 buying_prices = np.arange(60, 160, 10)
 house_prices = (0.5 * buying_prices).astype(int)
+n_dice = 1
+n_dicefaces = 1
 
 my_fields = [StartField(position=0)]
 pos = 1
@@ -45,7 +47,7 @@ for (color, buying_price, house_price, n) in zip(colors, buying_prices, house_pr
 
 print(len(my_fields))
 # Initialize gamelogic
-my_gamestate = GameState(players=players, fields=my_fields, pass_go_income=PASS_GO_INCOME)
+my_gamestate = GameState(players=players, fields=my_fields, pass_go_income=PASS_GO_INCOME, n_dice=n_dice, n_dicefaces=n_dicefaces)
 my_gamelogic = GameLogic(gamestate=my_gamestate)
 
 # Shuffle player sequence
@@ -83,4 +85,7 @@ print("END")
 for player in players:
     print(f"Player {player.id}: {player.alive} ({player.balance} €)")
 
+for field in my_gamestate.fields:
+    if isinstance(field, Property):
+        print(f"Field {field.position}: Owner: {('P' + str(field.owner.id)) if field.owner else 'none'}, Monopoly: {field.monopoly}, Mortaged: {field.mortgaged}")
 

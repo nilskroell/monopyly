@@ -7,6 +7,7 @@ class GameState():
                  pass_go_income: int = 200,
                  n_total_houses: int = 120,
                  buyback_quota: float = 0.5,
+                 monopoly_factor: float = 2.0,
                  n_dice: int = 2,
                  n_dicefaces: int = 6) -> None:
                  
@@ -14,6 +15,7 @@ class GameState():
         self.players = players
         self.fields = fields
         self.board_length = len(self.fields)
+        self.monopoly_factor = monopoly_factor
 
         self.pass_go_income = pass_go_income
         self.n_total_houses = n_total_houses # TODO: outsource to gamestate or bank?

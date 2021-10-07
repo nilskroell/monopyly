@@ -41,32 +41,25 @@ class GameLogic():
         elif isinstance(field, NonProperty):
             pass
 
+    def calc_rent(self, property: Property) -> int:
+        if property.monopoly:
+            return property.base_rent * self.gamestate.monopoly_factor
+        else:
+            return property.base_rent
 
-    def throw_and_go(self, player: Player) -> None: # in main loop
-        n_dots, pasch = self.roll_dice()
-        self.move_player_forward(player, n_dots)
-        # TODO: wait for strategy input
-        self.process_player_position(player)
-
-        # TODO: wait for strategy input
-        
-        if pasch:
-            # TODO: throw_and_go again
-            pass
-
-    @staticmethod
-    def calc_rent(property: Property) -> int:
         # TODO
-        return property.base_rent
+    
 
-
-    def update_player_has_monopoly(self, color: int) -> None:
+    def update_monopoly(self, color: int) -> None:
         property_positions = self.gamestate.streetcolor_position_map[color]
 
         monopoly_flag = self.check_monopoly(property_positions)
+
+        logging.debug(f"Monopoly check of color {color}: {monopoly_flag}")
         
         for pos in property_positions:
-            self.gamestate.fields[pos].player_has_monopoly = monopoly_flag
+            self.gamestate.fields[pos].monopoly = monopoly_flag
+            logging.debug(f"Monopoly status of field {pos} changed to {monopoly_flag}")
 
     def check_monopoly(self, property_positions) -> bool:
         first_owner = self.gamestate.fields[property_positions[0]].owner
@@ -79,12 +72,9 @@ class GameLogic():
                 return False
 
         return True
-
-
     
     # Player balance
-    @staticmethod
-    def increase_player_balance(player: Player, amount: int) -> None:
+    def increase_player_balance(self, player: Player, amount: int) -> None:
         assert amount >= 0
         player.balance +=  amount
 
@@ -106,9 +96,8 @@ class GameLogic():
                     field.owner = None
                     field.mortgaged = False
                     field.n_houses = 0
-                    field.player_has_monopoly = False
+                    field.monopoly = False
                 
-
 
     def transfer_money_from_a_to_b(self, player_a: Player, player_b: Player, amount: int) -> None:
         # TODO: What if balance of player_a is not enough?
@@ -148,12 +137,12 @@ class GameLogic():
 
 
     # Property
-    @staticmethod
-    def change_property_owner(property: Property, new_owner: Player):
+    def change_property_owner(self, property: Property, new_owner: Player):
         logging.info(f"Change ownership of property {property.position} from " +
                      f"{('Player ' + property.owner.id) if property.owner else 'the bank'}" +
                      " to Player {new_owner.id}.")
         property.owner = new_owner
+        self.update_monopoly(property.color)
 
     def buy_property_from_bank(self, player: Player, property: Property):
         logging.info(f"Player {player.id} buys property {property.position} from bank for {property.buying_price} €.")

@@ -10,7 +10,7 @@ class Property(Field):
         assert mortagage_share <= 1
         assert mortagage_share > 0
         self.color = color
-        self.player_has_monopoly = False
+        self.monopoly = False
 
         self.owner: Player = None
         self.buying_price: int = buying_price
