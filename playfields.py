@@ -39,8 +39,8 @@ class StreetField(Property):
         self.max_n_houses_per_street = max_n_houses_per_street
         self.rent_factors = rent_factors
 
-        if rent_factors is None:
-            rent_factors = np.arange(2, 2 + self.max_n_houses_per_street , 1)
+        if self.rent_factors is None:
+            self.rent_factors = np.arange(2, 2 + self.max_n_houses_per_street , 1)
 
 class TrainstationField(Property):
     def __init__(self) -> None:
