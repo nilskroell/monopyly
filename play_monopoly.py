@@ -36,7 +36,7 @@ my_fields = [StartField(position=0)]
 pos = 1
 for (color, buying_price, house_price, n) in zip(colors, buying_prices, house_prices, n_fields):
     for i in range(n):
-        my_fields.append(StreetField(position=pos, color=color, buying_price=buying_price, price_per_house=house_price))
+        my_fields.append(StreetField(position=pos, color=color, buying_price=buying_price, house_price=house_price))
         pos += 1
 
 print(len(my_fields))
@@ -60,6 +60,8 @@ for i in range(N_ROUNDS):
         player_controller = player_controllers[j]
 
         logging.debug(f">>> Player {player.id}'s turn:")
+        if not player.alive:
+            logging.info(f"Player {player.id} is dead: SKIP")
         my_gamelogic.set_active_player(player)
         n_dots, pasch = my_gamelogic.roll_dice()
         my_gamelogic.move_player_forward(player, n_dots)
