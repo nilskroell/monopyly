@@ -17,11 +17,11 @@ logging.basicConfig(level=logging.DEBUG, format='%(message)s')
 
 
 # USER DEFINED GAME PARAMETERS
-N_PLAYERS = 10
+N_PLAYERS = 5
 START_BALANCE = 1500
 PASS_GO_INCOME = 200
 
-N_ROUNDS = 1000
+N_ROUNDS = 100
 
 # INITIALIZE GAME
 # Initialize players
@@ -88,6 +88,11 @@ for player in players:
     print(f"Player {player.id}: {player.alive} ({player.balance} €)")
 
 for field in gamestate.fields:
+    s = f"Field {field.position}: "
     if isinstance(field, Property):
-        print(f"Field {field.position}: Owner: {('P' + str(field.owner.id)) if field.owner else 'none'}, Monopoly: {field.monopoly}, Mortaged: {field.mortgaged}")
+        s += f"Owner: {('P' + str(field.owner.id)) if field.owner else 'none'}, Monopoly: {field.monopoly}, Mortaged: {field.mortgaged}, "
+    if isinstance(field, StreetField):
+        s += f"Houses: {field.n_houses}"
+
+    print(s)
 
