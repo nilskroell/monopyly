@@ -1,3 +1,4 @@
+from numpy.lib.arraysetops import unique
 from gamestate import GameState
 from playfields import StreetField, StartField
 from gamelogic import GameLogic
@@ -27,11 +28,10 @@ N_ROUNDS = 100
 players = [Player(id=i, start_balance=START_BALANCE, position=0) for i in range(N_PLAYERS)]
 
 
-
 # Initialize fields
 
 colors = np.arange(10)
-n_fields = np.repeat([2, 3], repeats=5)
+n_fields = np.tile([2, 3], 5)
 buying_prices = np.arange(60, 160, 10)
 house_prices = (0.5 * buying_prices).astype(int)
 
@@ -41,6 +41,7 @@ for (color, buying_price, house_price, n) in zip(colors, buying_prices, house_pr
     for i in range(n):
         my_fields.append(StreetField(position=pos, color=color, buying_price=buying_price, house_price=house_price))
         pos += 1
+
 
 print(len(my_fields))
 # Initialize gamelogic

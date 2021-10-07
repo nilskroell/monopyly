@@ -70,10 +70,20 @@ class GameLogic():
         player.balance -= amount
         self.check_player_lifestatus(player)
 
-    @staticmethod
-    def check_player_lifestatus(player: Player) -> None:
+    def check_player_lifestatus(self, player: Player) -> None:
         if player.balance < 0:
-            player.alive = False
+            self.kill_player(player)
+
+    def kill_player(self, player: Player) -> None:
+        player.alive = False
+
+        for field in self.gamestate.fields:
+            if isinstance(field, Property):
+                if field.owner is player:
+                    field.owner = None
+                    field.mortgaged = False
+                    field.n_houses = 0
+                
 
 
     def transfer_money_from_a_to_b(self, player_a: Player, player_b: Player, amount: int) -> None:

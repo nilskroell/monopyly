@@ -1,3 +1,5 @@
+import utils
+
 class GameState():
     def __init__(self,
                  players: list,
@@ -18,3 +20,5 @@ class GameState():
         self.buyback_quota = buyback_quota
         self.n_dice = n_dice
         self.n_dicefaces = n_dicefaces
+
+        self.streetcolor_position_map = utils.get_streetcolor_position_map(self.fields)
