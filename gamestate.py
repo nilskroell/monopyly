@@ -18,7 +18,7 @@ class GameState():
         self.monopoly_factor = monopoly_factor
 
         self.pass_go_income = pass_go_income
-        self.n_total_houses = n_total_houses # TODO: outsource to gamestate or bank?
+        self.n_total_houses = n_total_houses
         self.buyback_quota = buyback_quota
         self.n_dice = n_dice
         self.n_dicefaces = n_dicefaces

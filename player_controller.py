@@ -129,7 +129,7 @@ class PlayerController():
         self.gamelogic.buy_n_houses_on_streetfield(self.player, street, n_houses_to_buy)
         return True
 
-    def sell_houses(self, street: StreetField, n_houses_to_sell: int) -> bool:
+    def sell_n_houses(self, street: StreetField, n_houses_to_sell: int) -> bool:
         if not isinstance(street, StreetField):
             logging.warn(f"Player {self.player.id} cannot sell house/s on field {street.position}: " +
                          f"Field {street.position} is not a street.")

@@ -1,3 +1,5 @@
+from functools import singledispatch
+from numpy.lib.arraysetops import isin
 from gamestate import GameState
 from player import Player
 from playfields import NonProperty, Property, StreetField
@@ -43,13 +45,18 @@ class GameLogic():
 
     def calc_rent(self, property: Property) -> int:
         if property.monopoly:
-            return property.base_rent * self.gamestate.monopoly_factor
+            if isinstance(property, StreetField):
+                if property.n_houses == 0:
+                    return int(property.base_rent * self.gamestate.monopoly_factor)
+                else:
+                    return int(property.base_rent * property.rent_factors[property.n_houses - 1])
+            else:
+                return int(property.base_rent * self.gamestate.monopoly_factor)
         else:
             return property.base_rent
 
         # TODO
     
-
     def update_monopoly(self, color: int) -> None:
         property_positions = self.gamestate.streetcolor_position_map[color]
 
@@ -93,10 +100,11 @@ class GameLogic():
         for field in self.gamestate.fields:
             if isinstance(field, Property):
                 if field.owner is player:
-                    field.owner = None
+                    field.owner = None # TODO: tranfer to other players
                     field.mortgaged = False
-                    field.n_houses = 0
                     field.monopoly = False
+                    if isinstance(field, StreetField):
+                        self.sell_n_houses_on_streetfield(player, field, field.n_houses)
                 
 
     def transfer_money_from_a_to_b(self, player_a: Player, player_b: Player, amount: int) -> None:
