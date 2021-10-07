@@ -57,7 +57,7 @@ class GameLogic():
     @staticmethod
     def calc_rent(property: Property):
         # TODO
-        return 0.1 * property.buying_price
+        return property.base_rent
     
     # Player balance
     @staticmethod

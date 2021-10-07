@@ -60,7 +60,6 @@ strategies = [Strategy(player=p, player_controller=pc) for (p, pc) in zip(player
 
 for i in range(N_ROUNDS):
     for j, player in enumerate(players):
-        print(player)
         print(f"Balance player {player.id}: {player.balance} €")
 
         player_controller = player_controllers[j]
@@ -68,6 +67,7 @@ for i in range(N_ROUNDS):
         logging.debug(f">>> Player {player.id}'s turn:")
         if not player.alive:
             logging.info(f"Player {player.id} is dead: SKIP")
+            continue
         my_gamelogic.set_active_player(player)
         n_dots, pasch = my_gamelogic.roll_dice()
         my_gamelogic.move_player_forward(player, n_dots)
@@ -80,6 +80,6 @@ for i in range(N_ROUNDS):
 print("END")
 
 for player in players:
-    print(f"Player {player.id}: {player.alive}")
+    print(f"Player {player.id}: {player.alive} ({player.balance} €)")
 
 

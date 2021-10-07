@@ -14,6 +14,8 @@ class Property(Field):
         self.owner: Player = None
         self.buying_price: int = buying_price
 
+        self.base_rent = 0.1 * self.buying_price
+
         self.mortagage_value: int = int(mortagage_share * self.buying_price)
         self.mortgaged = False
 
