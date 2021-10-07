@@ -5,12 +5,13 @@ class Field():
         self.position = position
 
 class Property(Field):
-    def __init__(self, position: int, buying_price: int, mortagage_share : float) -> None:
+    def __init__(self, position: int, buying_price: int, color: int, mortagage_share : float) -> None:
         super().__init__(position)
         assert mortagage_share <= 1
         assert mortagage_share > 0
+        self.color = color
+        self.player_has_monopoly = False
 
-        
         self.owner: Player = None
         self.buying_price: int = buying_price
 
@@ -21,8 +22,8 @@ class Property(Field):
 
 class StreetField(Property):
     def __init__(self, position: int, color: int, buying_price: int, house_price: int, max_n_houses_per_street: int = 5, mortagage_share : float = 0.5) -> None:
-        super().__init__(position, buying_price, mortagage_share)
-        self.color = color
+        super().__init__(position, buying_price, color, mortagage_share)
+        
         self.house_price = house_price
 
         self.n_houses: int = 0

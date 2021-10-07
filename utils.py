@@ -8,7 +8,7 @@ def throw_n_dice(n_dice: int = 2, n_dicefaces: int = 6):
     return [throw_dice(n_dicefaces) for i in range(n_dice)]
 
 
-def get_streetcolor_position_map(fields):
+def get_propertycolor_position_map(fields):
     colors = []
     for f in fields:
         if isinstance(f, StreetField):

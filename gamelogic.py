@@ -55,9 +55,32 @@ class GameLogic():
             pass
 
     @staticmethod
-    def calc_rent(property: Property):
+    def calc_rent(property: Property) -> int:
         # TODO
         return property.base_rent
+
+
+    def update_player_has_monopoly(self, color: int) -> None:
+        property_positions = self.gamestate.streetcolor_position_map[color]
+
+        monopoly_flag = self.check_monopoly(property_positions)
+        
+        for pos in property_positions:
+            self.gamestate.fields[pos].player_has_monopoly = monopoly_flag
+
+    def check_monopoly(self, property_positions) -> bool:
+        first_owner = self.gamestate.fields[property_positions[0]].owner
+
+        if first_owner is None:
+            return False
+
+        for pos in property_positions[1::]:
+            if first_owner is not self.gamestate.fields[pos].owner:
+                return False
+
+        return True
+
+
     
     # Player balance
     @staticmethod
@@ -83,6 +106,7 @@ class GameLogic():
                     field.owner = None
                     field.mortgaged = False
                     field.n_houses = 0
+                    field.player_has_monopoly = False
                 
 
 
