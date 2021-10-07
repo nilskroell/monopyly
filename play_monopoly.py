@@ -9,6 +9,8 @@ import logging
 import numpy as np
 import matplotlib.pyplot as plt
 
+from strategy import Strategy
+
 logging.basicConfig(level=logging.DEBUG, format='%(message)s')
 
 
@@ -48,10 +50,12 @@ my_gamelogic = GameLogic(players=players, fields=my_fields, pass_go_income=PASS_
 random.shuffle(players)
 
 # Initialize player controllers
-player_controllers = [PlayerController(p, my_gamelogic) for p in players]
+player_controllers = [PlayerController(player=p, gamelogic=my_gamelogic) for p in players]
+
+# initialize strategies
+strategies = [Strategy(player=p, player_controller=pc) for (p, pc) in zip(players, player_controllers)]
 
 # START GAME
-
 
 for i in range(N_ROUNDS):
     for j, player in enumerate(players):
@@ -65,10 +69,7 @@ for i in range(N_ROUNDS):
         my_gamelogic.set_active_player(player)
         n_dots, pasch = my_gamelogic.roll_dice()
         my_gamelogic.move_player_forward(player, n_dots)
-        # TODO: strategy input
-
-        player_controller.buy_property()
-
+        strategies[j].act()
         my_gamelogic.process_player_position(player)
 
         print(f"Balance player {player.id}: {player.balance} €")
