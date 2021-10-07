@@ -84,7 +84,7 @@ class PlayerController():
         self.gamelogic.mortgage_property(property)
         return True
 
-    def buy_n_houses_on_property(self, street: StreetField, n_houses_to_buy: int) -> bool:
+    def buy_n_houses(self, street: StreetField, n_houses_to_buy: int) -> bool:
         if not isinstance(street, StreetField):
             logging.warn(f"Player {self.player.id} cannot buy house/s on field {street.position}: " +
                          f"Field {street.position} is not a street.")
@@ -103,7 +103,7 @@ class PlayerController():
 
         if not isinstance(n_houses_to_buy, int):
             logging.warn(f"Player {self.player.id} cannot buy house/s on street {street.position}: " +
-                         f"{n_houses_to_buy} is not an integer ().")
+                         f"{n_houses_to_buy} is not an integer.")
             return False
         
         if n_houses_to_buy <= 0:
@@ -127,12 +127,36 @@ class PlayerController():
         self.gamelogic.buy_n_houses_on_streetfield(self.player, street, n_houses_to_buy)
         return True
 
+    def sell_houses(self, street: StreetField, n_houses_to_sell: int) -> bool:
+        if not isinstance(street, StreetField):
+            logging.warn(f"Player {self.player.id} cannot sell house/s on field {street.position}: " +
+                         f"Field {street.position} is not a street.")
+            return False
+
+        if self.player is not street.owner:
+            logging.warn(f"Player {self.player.id} cannot sell house/s on street {street.position}: " +
+                         f"Player {self.player.id} is not the owner of {street.position}. " +
+                         f"(Player {street.owner.id} is.)")
+            return False
+
+        if not isinstance(n_houses_to_sell, int):
+            logging.warn(f"Player {self.player.id} cannot sell house/s on street {street.position}: " +
+                         f"{n_houses_to_sell} is not an integer.")
+            return False
         
-            
+        if n_houses_to_sell <= 0:
+            logging.warn(f"Player {self.player.id} cannot sell house/s on street {street.position}: " +
+                         f"{n_houses_to_sell} is negative or zero.")
+            return False
 
-    # buy house(s)
+        if n_houses_to_sell > street.n_houses:
+            logging.warn(f"Player {self.player.id} cannot sell {n_houses_to_sell} house/s on street {street.position}: " +
+                         f"Street {street.position} contains {street.n_houses}, but player {self.player.id} " +
+                         f"wants to sell {n_houses_to_sell}")
+            return False
 
-    # sell house(s)
+        self.gamelogic.sell_n_houses_on_streetfield(self.player, street, n_houses_to_sell)
+        return True
 
     # propose_trade?
 

@@ -7,14 +7,23 @@ import numpy as np
 
 
 class GameLogic():
-    def __init__(self, players: list, fields: list, pass_go_income: int = 200, n_total_houses: int = 120, n_dice: int = 2, n_dicefaces: int = 6) -> None:
+    def __init__(self,
+                 players: list,
+                 fields: list,
+                 pass_go_income: int = 200,
+                 n_total_houses: int = 120,
+                 buyback_quota: float = 0.5,
+                 n_dice: int = 2,
+                 n_dicefaces: int = 6) -> None:
         self.active_player = None
         self.players = players
         self.fields = fields
         self.board_length = len(self.fields)
 
         self.pass_go_income = pass_go_income
-        self.n_total_houses = n_total_houses # outsource to gamestate or bank?
+        self.n_total_houses = n_total_houses # TODO: outsource to gamestate or bank?
+        self.buyback_quota = buyback_quota
+        self.sell_house_ratio
         self.n_dice = n_dice
         self.n_dicefaces = n_dicefaces
 
@@ -134,6 +143,12 @@ class GameLogic():
         street.n_houses += n_houses_to_buy
         self.n_total_houses -= n_houses_to_buy
         
+    def sell_n_houses_on_streetfield(self, player: Player, street: StreetField, n_houses_to_sell: int):
+        total_amount_to_get_back = self.buyback_quota * n_houses_to_sell * street.house_price
+        logging.info(f"Player {player.id} sells {n_houses_to_sell} on street {street.position} back to bank.")
+    	self.increase_player_balance(player, total_amount_to_get_back)
+        street.n_houses -= n_houses_to_sell
+        self.n_total_houses += n_houses_to_sell
 
     # Mortagage
     def mortgage_property(self, property: Property):
