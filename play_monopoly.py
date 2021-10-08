@@ -13,15 +13,15 @@ import matplotlib.pyplot as plt
 
 from strategy import Strategy
 
-logging.basicConfig(level=logging.DEBUG, format='%(message)s')
+logging.basicConfig(level=logging.WARNING, format='%(message)s')
 
 
 # USER DEFINED GAME PARAMETERS
-N_PLAYERS = 5
+N_PLAYERS = 3
 START_BALANCE = 1500
-PASS_GO_INCOME = 200
+PASS_GO_INCOME = 20
 
-N_ROUNDS = 100
+#N_ROUNDS = 100
 
 # INITIALIZE GAME
 # Initialize players
@@ -33,7 +33,7 @@ colors = np.arange(10)
 n_fields = np.tile([2, 3], 5)
 buying_prices = np.arange(60, 160, 10)
 house_prices = (0.5 * buying_prices).astype(int)
-base_rents = (0.1 * buying_prices).astype(int)
+base_rents = (0.3 * buying_prices).astype(int)
 n_dice = 2
 n_dicefaces = 6
 
@@ -63,7 +63,15 @@ strategies = [Strategy(player=player, player_controller=player_controller) for (
 
 # START GAME
 
-for i in range(N_ROUNDS):
+def n_living_players(players: list) -> int:
+    count = 0
+    for player in players:
+        if player.alive:
+            count += 1
+    return count
+
+n_rounds_played = 0
+while n_living_players(players) > 1:
     for j, player in enumerate(players):
         print(f"Balance player {player.id}: {player.balance} €")
 
@@ -81,8 +89,9 @@ for i in range(N_ROUNDS):
 
         print(f"Balance player {player.id}: {player.balance} €")
         print("")
+        n_rounds_played += 1
 
-print("END")
+print(f"END after {n_rounds_played}")
 
 for player in players:
     print(f"Player {player.id}: {player.alive} ({player.balance} €)")
@@ -90,7 +99,7 @@ for player in players:
 for field in gamestate.fields:
     s = f"Field {field.position}: "
     if isinstance(field, Property):
-        s += f"Owner: {('P' + str(field.owner.id)) if field.owner else 'none'}, Monopoly: {field.monopoly}, Mortaged: {field.mortgaged}, "
+        s += f"Owner: {('P' + str(field.owner.id)) if field.owner else 'none'}, Color: {field.color}, Monopoly: {field.monopoly}, Mortaged: {field.mortgaged}, "
     if isinstance(field, StreetField):
         s += f"Houses: {field.n_houses}"
 

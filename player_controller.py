@@ -103,6 +103,11 @@ class PlayerController():
                          f"Street {street.position} is mortagaged.")
             return False
 
+        if not street.monopoly:
+            logging.warn(f"Player {self.player.id} cannot buy house/s on street {street.position}: " +
+                         f"Player has no monopoly on street {street.position}.")
+            return False
+
         if not isinstance(n_houses_to_buy, int):
             logging.warn(f"Player {self.player.id} cannot buy house/s on street {street.position}: " +
                          f"{n_houses_to_buy} is not an integer.")

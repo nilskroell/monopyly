@@ -104,7 +104,8 @@ class GameLogic():
                     field.mortgaged = False
                     field.monopoly = False
                     if isinstance(field, StreetField):
-                        self.sell_n_houses_on_streetfield(player, field, field.n_houses)
+                        pass
+                        #self.sell_n_houses_on_streetfield(player, field, field.n_houses)
                 
 
     def transfer_money_from_a_to_b(self, player_a: Player, player_b: Player, amount: int) -> None:
