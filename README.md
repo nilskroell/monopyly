@@ -1,2 +1,2 @@
-# monopoly-simulation
-Monopoly Simulation in Python
+# monopyly
+Agent-based monopoly simulation in python.
