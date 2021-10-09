@@ -6,6 +6,7 @@ class GameState():
                  fields: list,
                  pass_go_income: int = 200,
                  n_total_houses: int = 120,
+                 max_diff_n_houses: int = 1,
                  buyback_quota: float = 0.5,
                  monopoly_factor: float = 2.0,
                  n_dice: int = 2,
@@ -16,7 +17,7 @@ class GameState():
         self.fields = fields
         self.board_length = len(self.fields)
         self.monopoly_factor = monopoly_factor
-
+        self.max_diff_n_houses = max_diff_n_houses
         self.pass_go_income = pass_go_income
         self.n_total_houses = n_total_houses
         self.buyback_quota = buyback_quota

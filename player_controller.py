@@ -125,6 +125,12 @@ class PlayerController():
                          f"after transaction ({n_houses_after_transaction})")
             return False
 
+        if not self.gamelogic.max_diff_n_houses_is_valid(street, n_houses_to_buy):
+            logging.warn(f"Player {self.player.id} cannot buy {n_houses_to_buy} house/s on street {street.position}: " +
+                         f"Maximum difference between number of houses ({self.gamestate.max_diff_n_houses}) on " +
+                         f"street color {street.color} would be exceeded.")
+            return False
+
         n_total_houses_after_transaction = self.gamestate.n_total_houses - n_houses_to_buy
         if n_total_houses_after_transaction <= 0:
             logging.warn(f"Player {self.player.id} cannot buy {n_houses_to_buy} house/s on street {street.position}: " +
@@ -160,6 +166,12 @@ class PlayerController():
             logging.warn(f"Player {self.player.id} cannot sell {n_houses_to_sell} house/s on street {street.position}: " +
                          f"Street {street.position} contains {street.n_houses}, but player {self.player.id} " +
                          f"wants to sell {n_houses_to_sell}")
+            return False
+
+        if not self.gamelogic.max_diff_n_houses_is_valid(street, n_houses_to_sell):
+            logging.warn(f"Player {self.player.id} cannot sell {n_houses_to_sell} house/s on street {street.position}: " +
+                         f"Maximum difference between number of houses ({self.gamestate.max_diff_n_houses}) on " +
+                         f"street color {street.color} would be exceeded.")
             return False
 
         self.gamelogic.sell_n_houses_on_streetfield(self.player, street, n_houses_to_sell)

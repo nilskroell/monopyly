@@ -68,6 +68,24 @@ class GameLogic():
             self.gamestate.fields[pos].monopoly = monopoly_flag
             logging.debug(f"Monopoly status of field {pos} changed to {monopoly_flag}")
 
+    def max_diff_n_houses_is_valid(self, street_of_interest: StreetField, delta_n_houses: int) -> bool:
+        color = street_of_interest.color
+        property_positions = self.gamestate.streetcolor_position_map[color]
+
+        n_houses_street = []
+        for pos in property_positions:
+            if pos == street_of_interest.position:
+                n_houses = street_of_interest.n_houses + delta_n_houses
+            else:
+                n_houses = self.gamestate.fields[pos].n_houses
+
+            n_houses_street.append(n_houses)
+
+        if (max(n_houses_street) - min(n_houses_street)) <= self.gamestate.max_diff_n_houses:
+            return True
+        else:
+            return False
+
     def check_monopoly(self, property_positions) -> bool:
         first_owner = self.gamestate.fields[property_positions[0]].owner
 
