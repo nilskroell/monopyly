@@ -1,6 +1,6 @@
 from gamestate import GameState
 from player import Player
-from playfields import NonProperty, Property, StreetField
+from playfields import NonProperty, Property, StreetField, TaxField
 import utils
 
 import logging
@@ -38,8 +38,14 @@ class GameLogic():
                 else:
                     rent = self.calc_rent(field)
                     self.transfer_money_from_a_to_b(player, field.owner, rent)
-        elif isinstance(field, NonProperty):
+        elif isinstance(field, TaxField):
+            self.pay_taxes(player, field)
+        else:
             pass
+
+    def pay_taxes(self, player: Player, taxfield: TaxField) -> None:
+        logging.info(f"Player {player.id} pays {taxfield.tax} € taxes on field {taxfield.position}")
+        self.decrease_player_balance(player, taxfield.tax, creditor=None)
 
     def calc_rent(self, property: Property) -> int:
         if property.monopoly:
@@ -183,14 +189,20 @@ class GameLogic():
         street.n_houses += n_houses_to_buy
         self.gamestate.n_total_houses -= n_houses_to_buy
 
-    def sell_n_houses_on_streetfield(self, player: Player, street: StreetField, n_houses_to_sell: int):
-        total_amount_to_get_back = int(self.gamestate.buyback_quota *
-                                       n_houses_to_sell * street.house_price)
-        logging.info(f"Player {player.id} sells {n_houses_to_sell} on " +
-                     f"street {street.position} back to bank.")
-        self.increase_player_balance(player, total_amount_to_get_back)
-        street.n_houses -= n_houses_to_sell
-        self.gamestate.n_total_houses += n_houses_to_sell
+    def sell_n_houses_on_streetfield(self, player, street: StreetField, n_houses_to_sell: int):
+        if player:
+            total_amount_to_get_back = int(self.gamestate.buyback_quota *
+                                        n_houses_to_sell * street.house_price)
+            logging.info(f"Player {player.id} sells {n_houses_to_sell} on " +
+                        f"street {street.position} back to bank.")
+            self.increase_player_balance(player, total_amount_to_get_back)
+            street.n_houses -= n_houses_to_sell
+            self.gamestate.n_total_houses += n_houses_to_sell
+        else:
+            logging.info(f"{n_houses_to_sell} houses transfered from street to bank due to.")
+            street.n_houses -= n_houses_to_sell
+            self.gamestate.n_total_houses += n_houses_to_sell
+
 
     # Mortagage
     def mortgage_property(self, property: Property):

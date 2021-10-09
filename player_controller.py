@@ -5,12 +5,13 @@ from playfields import Property, StreetField
 
 import logging
 
+
 class PlayerController():
     def __init__(self, player: Player, gamestate: GameState, gamelogic: GameLogic) -> None:
         self.player = player
         self.gamestate = gamestate
         self.gamelogic = gamelogic
-    
+
     def buy_property(self) -> bool:
         property = self.gamestate.fields[self.player.position]
 
@@ -28,7 +29,7 @@ class PlayerController():
             logging.warn(f"Player {self.player.id} cannot buy property {property.position}: " +
                          f"Already owned by {property.owner.id}.")
             return False
-        
+
         if property.buying_price > self.player.balance:
             logging.warn(f"Player {self.player.id} cannot buy property {property.position}: " +
                          f"Player {self.player.id} has {self.player.balance} € cash, " +
@@ -42,7 +43,7 @@ class PlayerController():
 
         if not isinstance(property, Property):
             logging.warn(f"Player {self.player.id} cannot mortagage field {property.position}: " +
-                       + f"field {property.position} is not a property.")
+                         f"field {property.position} is not a property.")
             return False
 
         if self.player is not property.owner:
@@ -57,7 +58,7 @@ class PlayerController():
 
         if isinstance(property, StreetField) and property.n_houses > 0:
             logging.warn(f"Player {self.player.id} cannot mortagage property {property.position}: " +
-                            f"{property.n_houses} houses are still standing on property {property.position}.")
+                         f"{property.n_houses} houses are still standing on property {property.position}.")
             return False
 
         self.gamelogic.mortgage_property(property)
@@ -67,7 +68,7 @@ class PlayerController():
 
         if not isinstance(property, Property):
             logging.warn(f"Player {self.player.id} cannot demortagage field {property.position}: " +
-                       + f"field {property.position} is not a property.")
+                         + f"field {property.position} is not a property.")
             return False
 
         if self.player is not property.owner:
@@ -108,7 +109,7 @@ class PlayerController():
             logging.warn(f"Player {self.player.id} cannot buy house/s on street {street.position}: " +
                          f"{n_houses_to_buy} is not an integer.")
             return False
-        
+
         if n_houses_to_buy <= 0:
             logging.warn(f"Player {self.player.id} cannot buy house/s on street {street.position}: " +
                          f"{n_houses_to_buy} is negative or zero.")
@@ -133,7 +134,8 @@ class PlayerController():
                          f"Not enough houses in the bank (currently {self.gamestate.n_total_houses}).")
             return False
 
-        self.gamelogic.buy_n_houses_on_streetfield(self.player, street, n_houses_to_buy)
+        self.gamelogic.buy_n_houses_on_streetfield(
+            self.player, street, n_houses_to_buy)
         return True
 
     def sell_n_houses(self, street: StreetField, n_houses_to_sell: int) -> bool:
@@ -151,7 +153,7 @@ class PlayerController():
             logging.warn(f"Player {self.player.id} cannot sell house/s on street {street.position}: " +
                          f"{n_houses_to_sell} is not an integer.")
             return False
-        
+
         if n_houses_to_sell <= 0:
             logging.warn(f"Player {self.player.id} cannot sell house/s on street {street.position}: " +
                          f"{n_houses_to_sell} is negative or zero.")
@@ -169,7 +171,8 @@ class PlayerController():
                          f"street color {street.color} would be exceeded.")
             return False
 
-        self.gamelogic.sell_n_houses_on_streetfield(self.player, street, n_houses_to_sell)
+        self.gamelogic.sell_n_houses_on_streetfield(
+            self.player, street, n_houses_to_sell)
         return True
 
     # propose_trade?

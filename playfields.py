@@ -60,8 +60,9 @@ class FreeParkingField(NonProperty):
         super().__init__(position)
 
 class TaxField(NonProperty):
-    def __init__(self, position: int) -> None:
+    def __init__(self, position: int, tax: int) -> None:
         super().__init__(position)
+        self.tax = tax
 
 class StartField(NonProperty):
     def __init__(self, position: int) -> None:

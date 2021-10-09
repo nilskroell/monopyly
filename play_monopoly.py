@@ -1,5 +1,5 @@
 from gamestate import GameState
-from playfields import Property, StreetField, StartField
+from playfields import Property, StreetField, StartField, TaxField
 from gamelogic import GameLogic
 from player import Player
 from player_controller import PlayerController
@@ -11,15 +11,13 @@ import numpy as np
 
 from strategy import Strategy
 
-logging.basicConfig(level=logging.WARNING, format='%(message)s')
+logging.basicConfig(level=logging.INFO, format='%(message)s')
 
 
 # USER DEFINED GAME PARAMETERS
 N_PLAYERS = 3
 START_BALANCE = 1500
 PASS_GO_INCOME = 20
-
-#N_ROUNDS = 100
 
 # INITIALIZE GAME
 # Initialize players
@@ -36,7 +34,8 @@ n_dice = 2
 n_dicefaces = 6
 
 my_fields = [StartField(position=0)]
-pos = 1
+my_fields.append(TaxField(position=1, tax=100))
+pos = len(my_fields)
 for (color, buying_price, base_rent, house_price, n) in zip(colors, buying_prices, base_rents, house_prices, n_fields):
     for i in range(n):
         my_fields.append(StreetField(position=pos,
@@ -45,6 +44,8 @@ for (color, buying_price, base_rent, house_price, n) in zip(colors, buying_price
                                      base_rent=base_rent,
                                      house_price=house_price))
         pos += 1
+
+
 
 # Initialize gamelogic
 gamestate = GameState(players=players, fields=my_fields, pass_go_income=PASS_GO_INCOME, n_dice=n_dice, n_dicefaces=n_dicefaces)
@@ -71,8 +72,6 @@ def n_living_players(players: list) -> int:
 n_rounds_played = 0
 while n_living_players(players) > 1:
     for j, player in enumerate(players):
-        print(f"Balance player {player.id}: {player.balance} €")
-
         player_controller = player_controllers[j]
 
         logging.debug(f">>> Player {player.id}'s turn:")
@@ -84,10 +83,10 @@ while n_living_players(players) > 1:
         gamelogic.move_player_forward(player, n_dots)
         strategies[j].act(gamestate)
         gamelogic.process_player_position(player)
-
-        print(f"Balance player {player.id}: {player.balance} €")
         print("")
-        n_rounds_played += 1
+    n_rounds_played += 1
+    if n_rounds_played > 10:
+        break
 
 print(f"END after {n_rounds_played}")
 
