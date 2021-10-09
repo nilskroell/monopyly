@@ -1,5 +1,3 @@
-from functools import singledispatch
-from numpy.lib.arraysetops import isin
 from gamestate import GameState
 from player import Player
 from playfields import NonProperty, Property, StreetField
@@ -13,19 +11,19 @@ class GameLogic():
     def __init__(self, gamestate: GameState) -> None:
         self.gamestate = gamestate
 
-    def set_active_player(self, current_player: Player) -> None:
+    def set_active_player(self, current_player) -> None:
         self.gamestate.active_player = current_player
 
     # Basic stuff
     def roll_dice(self) -> tuple:
-        dice = utils.throw_n_dice(n_dice=self.gamestate.n_dice, n_dicefaces=self.gamestate.n_dicefaces)
+        dice = utils.throw_n_dice(
+            n_dice=self.gamestate.n_dice, n_dicefaces=self.gamestate.n_dicefaces)
         n_dots = np.sum(dice)
         pasch = np.min(dice) == np.max(dice)
 
         logging.debug(f"Alea iacta est: {dice} {'(pasch)' if pasch else ''}")
 
         return n_dots, pasch
-
 
     def process_player_position(self, player: Player) -> None:
         field = self.gamestate.fields[player.position]
@@ -55,18 +53,31 @@ class GameLogic():
         else:
             return property.base_rent
 
-        # TODO
-    
+        # TODO: Trainstation, Utility
+
     def update_monopoly(self, color: int) -> None:
         property_positions = self.gamestate.streetcolor_position_map[color]
 
         monopoly_flag = self.check_monopoly(property_positions)
 
         logging.debug(f"Monopoly check of color {color}: {monopoly_flag}")
-        
+
         for pos in property_positions:
             self.gamestate.fields[pos].monopoly = monopoly_flag
-            logging.debug(f"Monopoly status of field {pos} changed to {monopoly_flag}")
+            logging.debug(f"Monopoly status of field {pos} "
+                          + f"changed to {monopoly_flag}")
+
+    def check_monopoly(self, property_positions) -> bool:
+        first_owner = self.gamestate.fields[property_positions[0]].owner
+
+        if first_owner is None:
+            return False
+
+        for pos in property_positions[1::]:
+            if first_owner is not self.gamestate.fields[pos].owner:
+                return False
+
+        return True
 
     def max_diff_n_houses_is_valid(self, street_of_interest: StreetField, delta_n_houses: int) -> bool:
         color = street_of_interest.color
@@ -86,50 +97,34 @@ class GameLogic():
         else:
             return False
 
-    def check_monopoly(self, property_positions) -> bool:
-        first_owner = self.gamestate.fields[property_positions[0]].owner
-
-        if first_owner is None:
-            return False
-
-        for pos in property_positions[1::]:
-            if first_owner is not self.gamestate.fields[pos].owner:
-                return False
-
-        return True
-    
     # Player balance
     def increase_player_balance(self, player: Player, amount: int) -> None:
         assert amount >= 0
-        player.balance +=  amount
+        player.balance += amount
 
-    def decrease_player_balance(self, player: Player, amount: int) -> None:
+    def decrease_player_balance(self, player: Player, amount: int, creditor) -> None:
         assert amount >= 0
         player.balance -= amount
-        self.check_player_lifestatus(player)
+        self.check_player_lifestatus(player, creditor)
 
-    def check_player_lifestatus(self, player: Player) -> None:
+    def check_player_lifestatus(self, player: Player, creditor) -> None:
         if player.balance < 0:
-            self.kill_player(player)
+            self.kill_player(player, creditor)
 
-    def kill_player(self, player: Player) -> None:
+    def kill_player(self, player: Player, creditor) -> None:
         player.alive = False
-
         for field in self.gamestate.fields:
-            if isinstance(field, Property):
-                if field.owner is player:
-                    field.owner = None # TODO: tranfer to other players
-                    field.mortgaged = False
-                    field.monopoly = False
-                    if isinstance(field, StreetField):
-                        pass
-                        #self.sell_n_houses_on_streetfield(player, field, field.n_houses)
-                
+            if isinstance(field, Property) and field.owner is player:
+                field.owner = creditor
+                if isinstance(field, StreetField):
+                    self.sell_n_houses_on_streetfield(creditor,
+                                                      field,
+                                                      field.n_houses)
 
     def transfer_money_from_a_to_b(self, player_a: Player, player_b: Player, amount: int) -> None:
-        # TODO: What if balance of player_a is not enough?
-        logging.info(f"Transfer {amount} € from Player {player_a.id} to Player {player_b.id}.")
-        self.decrease_player_balance(player_a, amount)
+        logging.info(f"Transfer {amount} € from Player {player_a.id} " +
+                     f"to Player {player_b.id}.")
+        self.decrease_player_balance(player_a, amount, creditor=player_b)
         self.increase_player_balance(player_b, amount)
 
     def pass_go(self, player: Player) -> None:
@@ -143,61 +138,74 @@ class GameLogic():
         while target_position >= self.gamestate.board_length:
             target_position = target_position - self.gamestate.board_length
             self.pass_go(player)
-           
-        logging.debug(f"Move Player {player.id} from position {player.position} to position {target_position}.")
+
+        logging.debug(f"Move Player {player.id} from position {player.position} "
+                      + f"to position {target_position}.")
         player.position = target_position
-        
+
     def move_player_backward(self, player: Player, n_steps: int) -> None:
         target_position = player.position - n_steps
         if target_position < 0:
             target_position = target_position % self.gamestate.board_length
 
-        logging.debug(f"Move Player {player.id} from position {player.position} to position {target_position}.")
-        player.position = (player.position - n_steps) % self.gamestate.board_length
+        logging.debug(f"Move Player {player.id} from position {player.position} " +
+                      f"to position {target_position}.")
+        player.position = (player.position -
+                           n_steps) % self.gamestate.board_length
 
     def move_player_forward_to_position(self, player: Player, target_position: int) -> None:
         n_steps = target_position - player.position
         if n_steps < 0:
             n_steps += self.gamestate.board_length
-        
+
         self.move_player_forward(player, n_steps)
 
-
     # Property
-    def change_property_owner(self, property: Property, new_owner: Player):
+    def change_property_owner(self, property: Property, new_owner):
         logging.info(f"Change ownership of property {property.position} from " +
-                     f"{('Player ' + property.owner.id) if property.owner else 'the bank'}" +
+                     f"{('Player ' + str(property.owner.id)) if property.owner else 'the bank'}" +
                      " to Player {new_owner.id}.")
         property.owner = new_owner
         self.update_monopoly(property.color)
 
     def buy_property_from_bank(self, player: Player, property: Property):
-        logging.info(f"Player {player.id} buys property {property.position} from bank for {property.buying_price} €.")
+        logging.info(f"Player {player.id} buys property {property.position} " +
+                     f"from bank for {property.buying_price} €.")
         self.change_property_owner(property, player)
-        self.decrease_player_balance(player, property.buying_price)
+        self.decrease_player_balance(
+            player, property.buying_price, creditor=None)
 
     def buy_n_houses_on_streetfield(self, player: Player, street: StreetField, n_houses_to_buy: int):
         total_price_to_pay = n_houses_to_buy * street.house_price
-        logging.info(f"Player {player.id} buys {n_houses_to_buy} on street {street.position}.")
-        self.decrease_player_balance(player, total_price_to_pay)
+        logging.info(f"Player {player.id} buys {n_houses_to_buy} " +
+                     f"on street {street.position}.")
+        self.decrease_player_balance(player, total_price_to_pay, creditor=None)
         street.n_houses += n_houses_to_buy
         self.gamestate.n_total_houses -= n_houses_to_buy
-        
+
     def sell_n_houses_on_streetfield(self, player: Player, street: StreetField, n_houses_to_sell: int):
-        total_amount_to_get_back = self.gamestate.buyback_quota * n_houses_to_sell * street.house_price
-        logging.info(f"Player {player.id} sells {n_houses_to_sell} on street {street.position} back to bank.")
+        total_amount_to_get_back = int(self.gamestate.buyback_quota *
+                                       n_houses_to_sell * street.house_price)
+        logging.info(f"Player {player.id} sells {n_houses_to_sell} on " +
+                     f"street {street.position} back to bank.")
         self.increase_player_balance(player, total_amount_to_get_back)
         street.n_houses -= n_houses_to_sell
         self.gamestate.n_total_houses += n_houses_to_sell
 
     # Mortagage
     def mortgage_property(self, property: Property):
-        logging.info(f"Mortgaged property {property.position} for {property.mortagage_value} €.")
-        self.increase_player_balance(property.owner, property.mortagage_value)
-        property.mortgaged = True
-
+        if property.owner:
+            logging.info(f"Mortgaged property {property.position} " +
+                         f"for {property.mortagage_value} €.")
+            self.increase_player_balance(property.owner,
+                                         property.mortagage_value)
+            property.mortgaged = True
 
     def demortgage_property(self, property: Property):
-        logging.info(f"Demortgaged property {property.position} for {property.mortagage_value} €.")
-        self.decrease_player_balance(property.owner, property.mortagage_value)
-        property.mortgaged = False
+        if property.owner:
+            logging.info(f"Demortgaged property {property.position} " +
+                         f"for {property.mortagage_value} €.")
+            self.decrease_player_balance(property.owner,
+                                         property.mortagage_value,
+                                         creditor=None)
+            property.mortgaged = False

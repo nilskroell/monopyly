@@ -11,13 +11,12 @@ class PlayerController():
         self.gamestate = gamestate
         self.gamelogic = gamelogic
     
-    def buy_property(self) -> None:
+    def buy_property(self) -> bool:
         property = self.gamestate.fields[self.player.position]
 
         if self.player is not self.gamestate.active_player:
             logging.warn(f"Player {self.player.id} cannot buy property {property.position}: " +
-                         f"Player {self.player.id} is not the active player. " +
-                         f"(Player {self.gamestate.active_player.id} is.)")
+                         f"Player {self.player.id} is not the active player.")
             return False
 
         if not isinstance(property, Property):
@@ -48,8 +47,7 @@ class PlayerController():
 
         if self.player is not property.owner:
             logging.warn(f"Player {self.player.id} cannot mortagage property {property.position}: " +
-                         f"Player {self.player.id} is not the owner of {property.position}. " +
-                         f"(Player {property.owner.id} is.)")
+                         f"Player {self.player.id} is not the owner of {property.position}.")
             return False
 
         if property.mortgaged:
@@ -74,8 +72,7 @@ class PlayerController():
 
         if self.player is not property.owner:
             logging.warn(f"Player {self.player.id} cannot demortagage property {property.position}: " +
-                         f"Player {self.player.id} is not the owner of {property.position}. " +
-                         f"(Player {property.owner.id} is.)")
+                         f"Player {self.player.id} is not the owner of {property.position}.")
             return False
 
         if not property.mortgaged:
@@ -94,8 +91,7 @@ class PlayerController():
 
         if self.player is not street.owner:
             logging.warn(f"Player {self.player.id} cannot buy house/s on street {street.position}: " +
-                         f"Player {self.player.id} is not the owner of {street.position}. " +
-                         f"(Player {street.owner.id} is.)")
+                         f"Player {self.player.id} is not the owner of {street.position}.")
             return False
 
         if street.mortgaged:
@@ -148,8 +144,7 @@ class PlayerController():
 
         if self.player is not street.owner:
             logging.warn(f"Player {self.player.id} cannot sell house/s on street {street.position}: " +
-                         f"Player {self.player.id} is not the owner of {street.position}. " +
-                         f"(Player {street.owner.id} is.)")
+                         f"Player {self.player.id} is not the owner of {street.position}.")
             return False
 
         if not isinstance(n_houses_to_sell, int):

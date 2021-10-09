@@ -1,4 +1,3 @@
-from numpy.lib.arraysetops import unique
 from gamestate import GameState
 from playfields import Property, StreetField, StartField
 from gamelogic import GameLogic
@@ -9,7 +8,6 @@ import random
 import logging
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 from strategy import Strategy
 

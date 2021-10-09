@@ -14,7 +14,7 @@ class Property(Field):
         self.color = color
         self.monopoly = False
 
-        self.owner: Player = None
+        self.owner = None
         self.buying_price: int = buying_price
 
         self.base_rent = base_rent
@@ -43,8 +43,8 @@ class StreetField(Property):
             self.rent_factors = np.arange(2, 2 + self.max_n_houses_per_street , 1)
 
 class TrainstationField(Property):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, position, buying_price, base_rent, color, mortagage_share) -> None:
+        super().__init__(position, buying_price, base_rent, color, mortagage_share)
 
 class UtilityField(Property):
     def __init__(self) -> None:
