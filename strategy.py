@@ -11,3 +11,4 @@ class Strategy():
     def act(self, gamestate: GameState):
         self.player_controller.buy_property()
         self.player_controller.buy_n_houses(gamestate.fields[self.player.position], 1)
+        self.player_controller.mortagage_property(gamestate.fields[self.player.position])
