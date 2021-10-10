@@ -171,12 +171,7 @@ class PlayerController():
                          f"street color {street.color} would be exceeded.")
             return False
 
-        self.gamelogic.sell_n_houses_on_streetfield(
-            self.player, street, n_houses_to_sell)
+        self.gamelogic.sell_n_houses_on_streetfield(self.player,
+                                                    street,
+                                                    n_houses_to_sell)
         return True
-
-    # propose_trade?
-
-    # accept_trade?
-
-    # refuse_trade?
