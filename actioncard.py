@@ -1,6 +1,3 @@
-from numpy.lib.arraysetops import isin
-
-
 class ActionCard():
 
     def __init__(self,
