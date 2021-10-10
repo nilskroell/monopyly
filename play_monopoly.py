@@ -1,3 +1,4 @@
+from actioncard import ActionCard
 from gamestate import GameState
 from playfields import Property, StreetField, StartField, TaxField
 from gamelogic import GameLogic
@@ -21,7 +22,8 @@ PASS_GO_INCOME = 20
 
 # INITIALIZE GAME
 # Initialize players
-players = [Player(id=i, start_balance=START_BALANCE, position=0) for i in range(N_PLAYERS)]
+players = [Player(id=i, start_balance=START_BALANCE, position=0)
+           for i in range(N_PLAYERS)]
 
 
 # Initialize fields
@@ -33,34 +35,37 @@ base_rents = (0.3 * buying_prices).astype(int)
 n_dice = 2
 n_dicefaces = 6
 
-my_fields = [StartField(position=0)]
-my_fields.append(TaxField(position=1, tax=100))
-pos = len(my_fields)
+fields = [StartField()]
+fields.append(TaxField(tax=100))
+
+actioncards = [ActionCard]
+
+pos = len(fields)
 for (color, buying_price, base_rent, house_price, n) in zip(colors, buying_prices, base_rents, house_prices, n_fields):
     for i in range(n):
-        my_fields.append(StreetField(position=pos,
-                                     color=color,
-                                     buying_price=buying_price,
-                                     base_rent=base_rent,
-                                     house_price=house_price))
-        pos += 1
-
-
+        fields.append(StreetField(color=color,
+                                  buying_price=buying_price,
+                                  base_rent=base_rent,
+                                  house_price=house_price))
 
 # Initialize gamelogic
-gamestate = GameState(players=players, fields=my_fields, pass_go_income=PASS_GO_INCOME, n_dice=n_dice, n_dicefaces=n_dicefaces)
+gamestate = GameState(players=players, fields=fields,
+                      pass_go_income=PASS_GO_INCOME, n_dice=n_dice, n_dicefaces=n_dicefaces)
 gamelogic = GameLogic(gamestate=gamestate)
 
 # Shuffle player sequence
 random.shuffle(players)
 
 # Initialize player controllers
-player_controllers = [PlayerController(player=p, gamestate=gamestate, gamelogic=gamelogic) for p in players]
+player_controllers = [PlayerController(
+    player=p, gamestate=gamestate, gamelogic=gamelogic) for p in players]
 
 # initialize strategies
-strategies = [Strategy(player=player, player_controller=player_controller) for (player, player_controller) in zip(players, player_controllers)]
+strategies = [Strategy(player=player, player_controller=player_controller) for (
+    player, player_controller) in zip(players, player_controllers)]
 
 # START GAME
+
 
 def n_living_players(players: list) -> int:
     count = 0
@@ -68,6 +73,7 @@ def n_living_players(players: list) -> int:
         if player.alive:
             count += 1
     return count
+
 
 n_rounds_played = 0
 while n_living_players(players) > 1:
@@ -101,4 +107,3 @@ for field in gamestate.fields:
         s += f"Houses: {field.n_houses}"
 
     print(s)
-

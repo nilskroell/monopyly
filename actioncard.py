@@ -1,7 +1,4 @@
-from playfields import NonProperty
-
-
-class ActionCard(NonProperty):
+class ActionCard():
 
     def __init__(self,
                  position: int,
@@ -12,8 +9,6 @@ class ActionCard(NonProperty):
                  money_to_get: int = 0,
                  money_to_pay_per_house: int = 0
                  ) -> None:
-        super().__init__(position)
-
         for var in (position,
                     target_position,
                     n_steps_forward,

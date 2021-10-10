@@ -1,6 +1,6 @@
 from gamestate import GameState
 from player import Player
-from playfields import NonProperty, Property, StreetField, TaxField
+from playfields import ActionField, NonProperty, Property, StreetField, TaxField
 import utils
 
 import logging
@@ -40,6 +40,8 @@ class GameLogic():
                     self.transfer_money_from_a_to_b(player, field.owner, rent)
         elif isinstance(field, TaxField):
             self.pay_taxes(player, field)
+        elif isinstance(field, ActionField):
+            self.process_actionfield(field, player)
         else:
             pass
 
@@ -60,6 +62,48 @@ class GameLogic():
             return property.base_rent
 
         # TODO: Trainstation, Utility
+
+    def process_actionfield(self, actionfield: ActionField, player: Player):
+        actioncard = actionfield.actioncards[0]
+
+        if actioncard.target_position:
+            self.move_player_forward_to_position(player, actioncard.target_position)
+
+        if actioncard.n_steps_forward > 0:
+            self.move_player_forward(player, actioncard.n_steps_forward)
+
+        if actioncard.n_steps_backward > 0:
+            self.move_player_backward(player, actioncard.n_steps_backward)
+
+        if actioncard.money_to_pay > 0:
+            self.decrease_player_balance(player, actioncard.money_to_pay, creditor=None)
+
+        if actioncard.money_to_get > 0:
+            self.increase_player_balance(player, actioncard.money_to_get)    
+
+        if actioncard.money_to_pay_per_house > 0:
+            n_houses_player = self.determine_n_house_owned_by_player(player)
+            amount_to_pay = actioncard.money_to_pay_per_house * n_houses_player
+            self.decrease_player_balance(player, amount_to_pay, creditor=None)
+
+
+    def determine_n_house_owned_by_player(self, player: Player) -> int:
+        owned_properties = self.get_properties_owned_by_player(player)
+        total_n_house_owned = 0
+        for property in owned_properties:
+            if isinstance(property, StreetField):
+                total_n_house_owned += property.n_houses
+
+        return total_n_house_owned
+
+    def get_properties_owned_by_player(self, player: Player) -> list:
+        owned_properties = []
+        for field in self.gamestate.fields:
+            if isinstance(field, Property):
+                if field.owner is player:
+                    owned_properties.append(field)
+
+        return owned_properties
 
     def update_monopoly(self, color: int) -> None:
         property_positions = self.gamestate.streetcolor_position_map[color]
