@@ -1,6 +1,6 @@
 from actioncard import ActionCard
 from gamestate import GameState
-from playfields import Property, StreetField, StartField, TaxField
+from playfields import ActionField, Property, StreetField, StartField, TaxField
 from gamelogic import GameLogic
 from player import Player
 from player_controller import PlayerController
@@ -38,9 +38,15 @@ n_dicefaces = 6
 fields = [StartField()]
 fields.append(TaxField(tax=100))
 
-actioncards = [ActionCard]
+actioncards = [ActionCard(teleport_position=0),
+               ActionCard(n_steps_forward=1),
+               ActionCard(n_steps_backward=1),
+               ActionCard(money_to_pay=25),
+               ActionCard(money_to_get=100),
+               ActionCard(money_to_pay_per_house=10)]
 
-pos = len(fields)
+fields.append(ActionField(actioncards=actioncards))
+
 for (color, buying_price, base_rent, house_price, n) in zip(colors, buying_prices, base_rents, house_prices, n_fields):
     for i in range(n):
         fields.append(StreetField(color=color,
@@ -49,8 +55,11 @@ for (color, buying_price, base_rent, house_price, n) in zip(colors, buying_price
                                   house_price=house_price))
 
 # Initialize gamelogic
-gamestate = GameState(players=players, fields=fields,
-                      pass_go_income=PASS_GO_INCOME, n_dice=n_dice, n_dicefaces=n_dicefaces)
+gamestate = GameState(players=players,
+                      fields=fields,
+                      pass_go_income=PASS_GO_INCOME,
+                      n_dice=n_dice,
+                      n_dicefaces=n_dicefaces)
 gamelogic = GameLogic(gamestate=gamestate)
 
 # Shuffle player sequence

@@ -1,3 +1,4 @@
+from actioncard import ActionCard
 from gamestate import GameState
 from player import Player
 from playfields import ActionField, NonProperty, Property, StreetField, TaxField
@@ -64,10 +65,10 @@ class GameLogic():
         # TODO: Trainstation, Utility
 
     def process_actionfield(self, actionfield: ActionField, player: Player):
-        actioncard = actionfield.actioncards[0]
+        actioncard = self.draw_actioncard(actionfield)
 
-        if actioncard.target_position:
-            self.move_player_forward_to_position(player, actioncard.target_position)
+        if actioncard.teleport_position:
+            self.move_player_forward_to_position(player, actioncard.teleport_position)
 
         if actioncard.n_steps_forward > 0:
             self.move_player_forward(player, actioncard.n_steps_forward)
@@ -86,6 +87,35 @@ class GameLogic():
             amount_to_pay = actioncard.money_to_pay_per_house * n_houses_player
             self.decrease_player_balance(player, amount_to_pay, creditor=None)
 
+    @staticmethod
+    def draw_actioncard(actionfield: ActionField) -> ActionCard:
+        actioncard = actionfield.actioncards[0]
+
+        # Logging string        
+        s = ""
+        if actioncard.teleport_position:
+            s += f"teleport to position {actioncard.teleport_position},"
+        if actioncard.n_steps_forward > 0:
+            s += f"move {actioncard.n_steps_forward} step(s) forward,"
+        if actioncard.n_steps_backward > 0:
+            s += f"move {actioncard.n_steps_backward} step(s) backward,"
+        if actioncard.money_to_pay > 0:
+            s += f"pay {actioncard.money_to_pay} €,"
+        if actioncard.money_to_get > 0:
+            s += f"get {actioncard.money_to_get} €,"
+        if actioncard.money_to_pay_per_house > 0:
+            s += f"pay {actioncard.money_to_pay_per_house} € per house"
+        
+        if len(s) == 0:
+            s = "-"
+        else:
+            s = s[0:-1] + "."
+
+        logging.info(f"Draw actioncard: {s}")
+
+        # move actioncard to bottom of pile
+        actionfield.actioncards.append(actionfield.actioncards.pop(0))
+        return actioncard
 
     def determine_n_house_owned_by_player(self, player: Player) -> int:
         owned_properties = self.get_properties_owned_by_player(player)
