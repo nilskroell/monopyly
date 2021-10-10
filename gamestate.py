@@ -24,4 +24,9 @@ class GameState():
         self.n_dice = n_dice
         self.n_dicefaces = n_dicefaces
 
+        for i, field in enumerate(self.fields):
+            field.position = i
+
         self.streetcolor_position_map = utils.get_propertycolor_position_map(self.fields)
+
+        
