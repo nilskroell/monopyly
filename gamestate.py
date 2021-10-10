@@ -24,8 +24,14 @@ class GameState():
         self.n_dice = n_dice
         self.n_dicefaces = n_dicefaces
 
+
+        # define field positions
         for i, field in enumerate(self.fields):
             field.position = i
+
+        # define player ids
+        for i, player in enumerate(self.players):
+            player.id = i
 
         self.streetcolor_position_map = utils.get_propertycolor_position_map(self.fields)
 

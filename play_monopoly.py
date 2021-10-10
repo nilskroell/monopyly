@@ -22,7 +22,7 @@ PASS_GO_INCOME = 20
 
 # INITIALIZE GAME
 # Initialize players
-players = [Player(id=i, start_balance=START_BALANCE, position=0)
+players = [Player(start_balance=START_BALANCE, position=0)
            for i in range(N_PLAYERS)]
 
 
