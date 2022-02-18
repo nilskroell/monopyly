@@ -244,7 +244,7 @@ class GameLogic():
     def change_property_owner(self, property: Property, new_owner):
         logging.info(f"Change ownership of property {property.position} from " +
                      f"{('Player ' + str(property.owner.id)) if property.owner else 'the bank'}" +
-                     " to Player {new_owner.id}.")
+                     f" to Player {new_owner.id}.")
         property.owner = new_owner
         self.update_monopoly(property.color)
 

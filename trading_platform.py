@@ -22,11 +22,6 @@ class TradingPlatform():
             logging.debug(f"Player {player.id} places no valid initialization.")
             return
 
-        # filter out proposing player
-        for i, target_player in enumerate(targeted_players):
-            if target_player is player:
-                targeted_players.pop(i)
-
         self.process_tradeoffer(player, offer, targeted_players)
 
 
@@ -36,10 +31,16 @@ class TradingPlatform():
 
         # check if trade offer is valid
         if not self.check_if_valid_tradeoffer(proposing_player, offer, targeted_trading_players):
+            logging.debug(f"Trade offer from Player {proposing_player.id} is not valid.")
             return False
+
+        logging.debug(f"Trade offer from Player {proposing_player.id} is valid.")
 
         # send offer to trading partners
         for targeted_trading_player in targeted_trading_players:
+            if targeted_trading_player is proposing_player:
+                print(f"SKIP player {targeted_trading_player.id}.")
+                continue
             targeted_trading_strategy = self.strategies[targeted_trading_player.id]
             counteroffer = self.send_offer_to_trading_partner(targeted_trading_strategy,
                                                               offer,
@@ -62,13 +63,15 @@ class TradingPlatform():
                                       targeted_trading_strategy,
                                       offer: TradeOffer,
                                       proposing_player: Player) -> TradeOffer:
+        logging.debug(f"Sending trade offer from Player {proposing_player.id} to Player {targeted_trading_strategy.id}.")
         counteroffer = targeted_trading_strategy.evaluate_tradeoffer(offer,
                                                                      proposing_player,
                                                                      self.gamelogic.gamestate)
 
         # preprocess counteroffers (no gifts)
-        if counteroffer.money == 0 and len(counteroffer.properties) == 0:
-            counteroffer = None
+        if counteroffer:
+            if counteroffer.money == 0 and len(counteroffer.properties) == 0:
+                counteroffer = None
 
         return counteroffer
 

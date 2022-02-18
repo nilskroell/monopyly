@@ -5,23 +5,28 @@ from gamelogic import GameLogic
 from player import Player
 from player_controller import PlayerController
 from strategy import Strategy
+from trading_platform import TradingPlatform
 
 import random
 import logging
 
 import numpy as np
 
-from trading_platform import TradingPlatform
-
 
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 
+def print_player_update(players):
+    print(f"n = {len(players)} in the game.")
+    for player in players:
+        print(f"Player {player.id}: {player.alive} ({player.balance} €)")
 
 # USER DEFINED GAME PARAMETERS
-N_PLAYERS = 3
+N_PLAYERS = 6
 START_BALANCE = 1500
 PASS_GO_INCOME = 20
+
+PRINT_END_RESULTS = False
 
 # INITIALIZE GAME
 # Initialize players
@@ -36,6 +41,8 @@ house_prices = (0.5 * buying_prices).astype(int)
 base_rents = (0.3 * buying_prices).astype(int)
 n_dice = 2
 n_dicefaces = 6
+
+MAX_ROUNDS = 1000
 
 fields = [StartField()]
 fields.append(TaxField(tax=100))
@@ -75,10 +82,10 @@ player_controllers = [PlayerController(
 strategies = [Strategy(player=player, player_controller=player_controller) for (
     player, player_controller) in zip(players, player_controllers)]
 
+# initialize trading platform
+trading_platform = TradingPlatform(gamelogic=gamelogic, strategies=strategies)
 
 # START GAME
-
-
 def n_living_players(players: list) -> int:
     count = 0
     for player in players:
@@ -86,10 +93,12 @@ def n_living_players(players: list) -> int:
             count += 1
     return count
 
-
+print(players)
 n_rounds_played = 0
 while n_living_players(players) > 1:
+
     for j, player in enumerate(players):
+        print(players)
         player_controller = player_controllers[j]
 
         logging.debug(f">>> Player {player.id}'s turn:")
@@ -101,21 +110,29 @@ while n_living_players(players) > 1:
         gamelogic.move_player_forward(player, n_dots)
         strategies[j].act(gamestate)
         gamelogic.process_player_position(player)
+
+        # trading
+        trading_platform.invite_player_to_trade(player)
+
+        print(n_living_players(players))
+
         print("")
+        
+    print_player_update(players)
     n_rounds_played += 1
-    if n_rounds_played > 10:
+    if n_rounds_played > MAX_ROUNDS:
         break
 
-print(f"END after {n_rounds_played}")
+print(f"END: Game ends after {n_rounds_played} rounds.")
 
-for player in players:
-    print(f"Player {player.id}: {player.alive} ({player.balance} €)")
+if PRINT_END_RESULTS:
+    print_player_update(players)
 
-for field in gamestate.fields:
-    s = f"Field {field.position}: "
-    if isinstance(field, Property):
-        s += f"Owner: {('P' + str(field.owner.id)) if field.owner else 'none'}, Color: {field.color}, Monopoly: {field.monopoly}, Mortaged: {field.mortgaged}, "
-    if isinstance(field, StreetField):
-        s += f"Houses: {field.n_houses}"
+    for field in gamestate.fields:
+        s = f"Field {field.position}: "
+        if isinstance(field, Property):
+            s += f"Owner: {('P' + str(field.owner.id)) if field.owner else 'none'}, Color: {field.color}, Monopoly: {field.monopoly}, Mortaged: {field.mortgaged}, "
+        if isinstance(field, StreetField):
+            s += f"Houses: {field.n_houses}"
 
-    print(s)
+        print(s)
