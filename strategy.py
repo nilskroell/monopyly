@@ -1,4 +1,3 @@
-from numpy.core.fromnumeric import size
 from gamestate import GameState
 from player_controller import PlayerController
 from player import Player
@@ -29,10 +28,10 @@ class Strategy():
         offer = TradeOffer(properties=[sel_properties], money=0)
         return offer, target_partners
 
-    def evaluate_tradeoffer(self, offer: TradeOffer, proposing_player: Player, gamestate: GameState) -> TradeOffer:
+    def evaluate_tradeoffer(self, offer: TradeOffer, proposing_player: Player, gamestate: GameState) -> TradeOffer | None:
         # None to reject, TradeOffer to deal
         return None
 
-    def decide_on_counteroffer(targeted_trading_partner, offer, counteroffer) -> bool:
+    def decide_on_counteroffer(self, targeted_trading_partner, offer, counteroffer) -> bool:
         # True: accept, False: reject
-        return False
+        return True
