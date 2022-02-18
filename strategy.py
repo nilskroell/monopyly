@@ -1,3 +1,4 @@
+from numpy.core.fromnumeric import size
 from gamestate import GameState
 from player_controller import PlayerController
 from player import Player
@@ -14,6 +15,14 @@ class Strategy():
         self.player_controller.buy_property()
         self.player_controller.buy_n_houses(gamestate.fields[self.player.position], 1)
         self.player_controller.mortagage_property(gamestate.fields[self.player.position])
+
+    def initiate_trade(self, gamestate: GameState) -> tuple:
+        target_partners = gamestate.players
+        own_properties = self.player_controller.get_properties_owned_by_player(self.player)
+        sel_idx = np.random.randint(len(own_properties), size=1)
+        sel_properties = own_properties[sel_idx]
+        offer = TradeOffer(properties=[sel_properties], money=0)
+        return offer, target_partners
 
     def evaluate_tradeoffer(self, offer: TradeOffer, proposing_player: Player, gamestate: GameState) -> TradeOffer:
         # None to reject, TradeOffer to deal

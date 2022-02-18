@@ -4,13 +4,16 @@ from playfields import ActionField, Property, StreetField, StartField, TaxField
 from gamelogic import GameLogic
 from player import Player
 from player_controller import PlayerController
+from strategy import Strategy
 
 import random
 import logging
 
 import numpy as np
 
-from strategy import Strategy
+from trading_platform import TradingPlatform
+
+
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 
@@ -24,7 +27,6 @@ PASS_GO_INCOME = 20
 # Initialize players
 players = [Player(start_balance=START_BALANCE, position=0)
            for i in range(N_PLAYERS)]
-
 
 # Initialize fields
 colors = np.arange(10)
@@ -72,6 +74,7 @@ player_controllers = [PlayerController(
 # initialize strategies
 strategies = [Strategy(player=player, player_controller=player_controller) for (
     player, player_controller) in zip(players, player_controllers)]
+
 
 # START GAME
 

@@ -5,15 +5,13 @@ from player import Player
 from gamelogic import GameLogic
 from playfields import Property, StreetField
 from tradeoffer import TradeOffer
-from trading_platform import TradingPlatform
 
 
 class PlayerController():
-    def __init__(self, player: Player, gamestate: GameState, gamelogic: GameLogic, trading_platform: TradingPlatform) -> None:
+    def __init__(self, player: Player, gamestate: GameState, gamelogic: GameLogic) -> None:
         self.player = player
         self.gamestate = gamestate
         self.gamelogic = gamelogic
-        self.trading_platform = trading_platform
 
     def buy_property(self) -> bool:
         property = self.gamestate.fields[self.player.position]
@@ -179,5 +177,5 @@ class PlayerController():
                                                     n_houses_to_sell)
         return True
 
-    def propose_trade(self, proposing_player: Player, offer: TradeOffer, targeted_trading_players: list) -> bool:
-        return self.trading_platform.process_tradeoffer(proposing_player, offer, targeted_trading_players)
+    def get_properties_owned_by_player(self, player: Player) -> list:
+        return self.gamelogic.get_properties_owned_by_player(player)

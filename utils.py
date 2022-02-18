@@ -1,4 +1,5 @@
 import numpy as np
+
 from playfields import StreetField
 
 def throw_dice(n_dicefaces: int = 6):

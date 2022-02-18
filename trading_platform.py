@@ -1,18 +1,37 @@
 import logging
 
-from strategy import Strategy
+#from strategy import Strategy
 from tradeoffer import TradeOffer
 from player import Player
 from gamelogic import GameLogic
-
+from strategy import Strategy
 
 class TradingPlatform():
     def __init__(self, gamelogic: GameLogic, strategies: list) -> None:
         self.gamelogic = gamelogic
         self.strategies = strategies
 
-    def process_tradeoffer(self, proposing_player: Player, offer: TradeOffer, targeted_trading_players: list) -> bool:
+    def invite_player_to_trade(self, player: Player) -> None:
+        strategy = self.strategies[player.id]
+        offer, targeted_players = strategy.initiate_trade(self.gamelogic.gamestate)
 
+        if offer is None or targeted_players is None:
+            logging.debug(f"Player {player.id} places no trade initialization.")
+            return
+        if len(targeted_players) == 0:
+            logging.debug(f"Player {player.id} places no valid initialization.")
+            return
+
+        # filter out proposing player
+        for i, target_player in enumerate(targeted_players):
+            if target_player is player:
+                targeted_players.pop(i)
+
+        self.process_tradeoffer(player, offer, targeted_players)
+
+
+    def process_tradeoffer(self, proposing_player: Player, offer: TradeOffer, targeted_trading_players: list) -> bool:
+        logging.info(f"Processing trade offer from Player {proposing_player.id}")
         proposing_strategy = self.strategies[proposing_player.id]
 
         # check if trade offer is valid
@@ -40,7 +59,7 @@ class TradingPlatform():
         return False
 
     def send_offer_to_trading_partner(self,
-                                      targeted_trading_strategy: Strategy,
+                                      targeted_trading_strategy,
                                       offer: TradeOffer,
                                       proposing_player: Player) -> TradeOffer:
         counteroffer = targeted_trading_strategy.evaluate_tradeoffer(offer,
