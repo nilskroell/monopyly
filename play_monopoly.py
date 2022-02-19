@@ -4,11 +4,14 @@ from playfields import ActionField, Property, StreetField, StartField, TaxField
 from gamelogic import GameLogic
 from player import Player
 from player_controller import PlayerController
-from strategy import Strategy
 from trading_platform import TradingPlatform
+import io_utils
 
 import random
 import logging
+from pathlib import Path
+import importlib.util
+from pathlib import Path
 
 import numpy as np
 
@@ -16,22 +19,44 @@ import numpy as np
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 
+def read_strategy_classes(foldername, shuffle=False):
+    filenames = io_utils.get_list_of_all_files(foldername, ".py")
+    if shuffle:
+        random.shuffle(filenames)
+    strategy_classes = []
+    for filename in filenames:
+        s = read_class_from_file(filename)
+        strategy_classes.append(s)
+
+    return strategy_classes
+
 def print_player_update(players):
     print(f"n = {len(players)} in the game.")
     for player in players:
         print(f"Player {player.id}: {player.alive} ({player.balance} €)")
 
+def read_class_from_file(fullfilename: Path):
+    spec = importlib.util.spec_from_file_location(fullfilename.stem, fullfilename)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod.Strategy
+
 # USER DEFINED GAME PARAMETERS
-N_PLAYERS = 6
+
 START_BALANCE = 1500
 PASS_GO_INCOME = 20
 
 PRINT_END_RESULTS = False
 
 # INITIALIZE GAME
+# read strategies
+strategy_classes = read_strategy_classes(Path("./strategies"))
+n_strategies = len(strategy_classes)
 # Initialize players
 players = [Player(start_balance=START_BALANCE, position=0)
-           for i in range(N_PLAYERS)]
+           for i in range(n_strategies)]
+
+strategies = []
 
 # Initialize fields
 colors = np.arange(10)
@@ -71,16 +96,11 @@ gamestate = GameState(players=players,
                       n_dicefaces=n_dicefaces)
 gamelogic = GameLogic(gamestate=gamestate)
 
-# Shuffle player sequence
-random.shuffle(players)
-
 # Initialize player controllers
 player_controllers = [PlayerController(
     player=p, gamestate=gamestate, gamelogic=gamelogic) for p in players]
 
-# initialize strategies
-strategies = [Strategy(player=player, player_controller=player_controller) for (
-    player, player_controller) in zip(players, player_controllers)]
+strategies = [s(player=player, player_controller=player_controller) for s, player, player_controller in zip(strategy_classes, players, player_controllers)]
 
 # initialize trading platform
 trading_platform = TradingPlatform(gamelogic=gamelogic, strategies=strategies)
@@ -93,12 +113,9 @@ def n_living_players(players: list) -> int:
             count += 1
     return count
 
-print(players)
 n_rounds_played = 0
 while n_living_players(players) > 1:
-
     for j, player in enumerate(players):
-        print(players)
         player_controller = player_controllers[j]
 
         logging.debug(f">>> Player {player.id}'s turn:")

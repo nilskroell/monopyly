@@ -4,7 +4,6 @@ import logging
 from tradeoffer import TradeOffer
 from player import Player
 from gamelogic import GameLogic
-from strategy import Strategy
 
 class TradingPlatform():
     def __init__(self, gamelogic: GameLogic, strategies: list) -> None:
